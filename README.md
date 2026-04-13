@@ -33,7 +33,7 @@ graph LR
 
 ## Who This Is For
 
-- Exploring D360 (Data Cloud) architecture before an implementation or interview
+- Evaluating D360 (Data Cloud) architecture for an implementation or proof of concept
 - Have a Salesforce Developer Edition with Data Cloud enabled
 - Have a Databricks workspace (trial works)
 - Comfortable with Python and SQL
@@ -198,24 +198,17 @@ graph LR
 | SF CLI (`sf`) | OAuth browser-flow authentication (no SOAP API) |
 | GitHub Actions | (planned) Automated data refresh |
 
-## What I Learned Building This
+## Observations from This Build
 
 1. **Query Federation works well.** Connecting Databricks to D360 was straightforward — enter hostname, HTTP path, PAT, done. The "Direct Access (Accelerated)" stream type queries live and caches locally.
 
 2. **DMO mapping is the real work.** The two-layer model (DLO → DMO) makes architectural sense but the UI-based mapping is manual and tedious. In production, use DevOps Data Kits and `sf project deploy start` for CI/CD.
 
-3. **Identity Resolution has a steep setup curve.** The Individual DMO needs Contact Point Email/Phone objects with formula-based composite primary keys. The Sales Cloud data bundle helps but doesn't auto-configure everything. Understanding the architecture (Individual → Contact Points via Party ID → Match Rules) is more important than memorizing the UI steps.
+3. **Identity Resolution has a steep setup curve.** The Individual DMO needs Contact Point Email/Phone objects with formula-based composite primary keys. The Sales Cloud data bundle helps but doesn't auto-configure everything. Understanding the architecture (Individual → Contact Points via Party ID → Match Rules) matters more than memorizing the UI steps.
 
-4. **CRM-native ingestion is a genuine advantage.** Zero-cost, zero-config ingestion from Salesforce objects is something competitors can't match. It's the "unfair advantage" of building a CDP inside the CRM platform.
+4. **CRM-native ingestion is a genuine advantage.** Zero-cost, zero-config ingestion from Salesforce objects is something competitors can't match. Building a CDP inside the CRM platform avoids the connector tax that standalone CDPs pay.
 
-5. **Agentforce without D360 is limited.** An agent that only sees CRM data misses the full picture. D360 is what makes the difference between "this account has a deal" and "this account has a deal, declining usage, and 3 escalated tickets."
-
-## Certifications
-
-- Databricks Certified Generative AI Engineer
-- Microsoft Certified Azure AI Engineer Associate (AI-102)
-- AWS Certified Machine Learning Engineer Associate
-- Google Cloud Professional Machine Learning Engineer
+5. **Agentforce without D360 is limited.** An agent that only sees CRM data misses the full picture. D360 is what turns "this account has a deal" into "this account has a deal, declining usage, and 3 escalated tickets."
 
 ## License
 
