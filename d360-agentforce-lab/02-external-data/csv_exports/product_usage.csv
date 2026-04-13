@@ -1,0 +1,26 @@
+account_id_external,company_name,company_domain,feature_adoption_score,api_calls_30d,active_users,last_login_date,data_volume_gb
+EXT-63516,Apex Financial Technologies,apexfintech.com,18,688,3,2026-03-19,49.6
+EXT-63723,Meridian Payments Group,meridianpay.io,21,2397,3,2026-02-27,40.0
+EXT-43763,Vaultline Digital Banking,vaultline.com,41,1581,2,2026-02-15,4.1
+EXT-47711,ClearEdge Capital Systems,clearedgecap.com,41,295,3,2026-03-17,19.2
+EXT-54139,Fintrust Solutions,fintrust.io,85,30292,16,2026-04-08,27.0
+EXT-33753,Novus Health Analytics,novushealth.com,83,31121,108,2026-04-06,11.9
+EXT-95764,BioSync Medical Systems,biosyncmed.com,38,1372,1,2026-02-14,36.2
+EXT-38652,CarePoint Digital,carepointdigital.com,75,30136,19,2026-04-06,37.7
+EXT-20502,MedLattice Inc,medlattice.com,86,21791,18,2026-04-09,45.4
+EXT-52021,Helix Genomics Platform,helixgenomics.io,94,13341,26,2026-04-07,44.1
+EXT-63652,UrbanThread Retail,urbanthread.com,70,23500,107,2026-04-06,10.1
+EXT-54151,Shopwise Commerce,shopwise.io,82,5282,52,2026-04-08,34.9
+EXT-35333,FreshCart Marketplace,freshcart.com,70,46947,43,2026-04-07,37.3
+EXT-40308,Lumenaire Brands,lumenaire.com,82,48028,22,2026-04-13,6.1
+EXT-79697,TrueNorth Outdoor Co,truenorthoutdoor.com,31,1371,2,2026-02-26,39.4
+EXT-68211,Forgewell Industries,forgewell.com,76,32317,249,2026-04-09,10.4
+EXT-12702,Steelvine Manufacturing,steelvine.com,79,9952,158,2026-04-13,48.1
+EXT-64627,Precision Dynamics Corp,precisiondynamics.com,32,2665,5,2026-02-22,15.1
+EXT-23121,Cascade Materials Group,cascadematerials.com,85,31112,32,2026-04-09,23.3
+EXT-26838,Ironclad Components,ironcladcomp.com,88,30494,36,2026-04-11,18.3
+EXT-37212,Neuralink Data Systems,neuralinkdata.com,33,2966,4,2026-03-19,41.4
+EXT-72806,CloudPeak Software,cloudpeak.io,90,48582,31,2026-04-12,26.8
+EXT-70276,DataVista Analytics,datavista.com,67,26610,35,2026-04-06,4.1
+EXT-95876,Quantum Edge Labs,quantumedgelabs.com,94,23045,10,2026-04-08,21.0
+EXT-31755,Synthetica AI,synthetica.ai,44,294,4,2026-03-28,2.9

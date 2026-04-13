@@ -1,0 +1,4 @@
+simple_salesforce>=1.12.0
+python-dotenv>=1.0.0
+faker>=25.0.0
+pandas>=2.0.0

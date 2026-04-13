@@ -1,0 +1,177 @@
+[
+  {
+    "salesforce_account_id": "001dM00003g4LKHQA2",
+    "name": "Apex Financial Technologies",
+    "domain": "apexfintech.com",
+    "industry": "Financial Services",
+    "employees": 450
+  },
+  {
+    "salesforce_account_id": "001dM00003g4LLtQAM",
+    "name": "Meridian Payments Group",
+    "domain": "meridianpay.io",
+    "industry": "Financial Services",
+    "employees": 220
+  },
+  {
+    "salesforce_account_id": "001dM00003g4LNVQA2",
+    "name": "Vaultline Digital Banking",
+    "domain": "vaultline.com",
+    "industry": "Financial Services",
+    "employees": 380
+  },
+  {
+    "salesforce_account_id": "001dM00003g4KZWQA2",
+    "name": "ClearEdge Capital Systems",
+    "domain": "clearedgecap.com",
+    "industry": "Financial Services",
+    "employees": 150
+  },
+  {
+    "salesforce_account_id": "001dM00003g4LP7QAM",
+    "name": "Fintrust Solutions",
+    "domain": "fintrust.io",
+    "industry": "Financial Services",
+    "employees": 95
+  },
+  {
+    "salesforce_account_id": "001dM00003g4AgcQAE",
+    "name": "Novus Health Analytics",
+    "domain": "novushealth.com",
+    "industry": "Healthcare",
+    "employees": 600
+  },
+  {
+    "salesforce_account_id": "001dM00003g48JqQAI",
+    "name": "BioSync Medical Systems",
+    "domain": "biosyncmed.com",
+    "industry": "Healthcare",
+    "employees": 340
+  },
+  {
+    "salesforce_account_id": "001dM00003g4DoAQAU",
+    "name": "CarePoint Digital",
+    "domain": "carepointdigital.com",
+    "industry": "Healthcare",
+    "employees": 180
+  },
+  {
+    "salesforce_account_id": "001dM00003g4M0DQAU",
+    "name": "MedLattice Inc",
+    "domain": "medlattice.com",
+    "industry": "Healthcare",
+    "employees": 520
+  },
+  {
+    "salesforce_account_id": "001dM00003g2mJoQAI",
+    "name": "Helix Genomics Platform",
+    "domain": "helixgenomics.io",
+    "industry": "Healthcare",
+    "employees": 275
+  },
+  {
+    "salesforce_account_id": "001dM00003g4FZ8QAM",
+    "name": "UrbanThread Retail",
+    "domain": "urbanthread.com",
+    "industry": "Retail",
+    "employees": 1200
+  },
+  {
+    "salesforce_account_id": "001dM00003g4M9tQAE",
+    "name": "Shopwise Commerce",
+    "domain": "shopwise.io",
+    "industry": "Retail",
+    "employees": 310
+  },
+  {
+    "salesforce_account_id": "001dM00003g4MBVQA2",
+    "name": "FreshCart Marketplace",
+    "domain": "freshcart.com",
+    "industry": "Retail",
+    "employees": 480
+  },
+  {
+    "salesforce_account_id": "001dM00003g4MD7QAM",
+    "name": "Lumenaire Brands",
+    "domain": "lumenaire.com",
+    "industry": "Retail",
+    "employees": 200
+  },
+  {
+    "salesforce_account_id": "001dM00003g4MEjQAM",
+    "name": "TrueNorth Outdoor Co",
+    "domain": "truenorthoutdoor.com",
+    "industry": "Retail",
+    "employees": 160
+  },
+  {
+    "salesforce_account_id": "001dM00003g4BXtQAM",
+    "name": "Forgewell Industries",
+    "domain": "forgewell.com",
+    "industry": "Manufacturing",
+    "employees": 2100
+  },
+  {
+    "salesforce_account_id": "001dM00003g4MJZQA2",
+    "name": "Steelvine Manufacturing",
+    "domain": "steelvine.com",
+    "industry": "Manufacturing",
+    "employees": 850
+  },
+  {
+    "salesforce_account_id": "001dM00003g4MY5QAM",
+    "name": "Precision Dynamics Corp",
+    "domain": "precisiondynamics.com",
+    "industry": "Manufacturing",
+    "employees": 620
+  },
+  {
+    "salesforce_account_id": "001dM00003g4Mg9QAE",
+    "name": "Cascade Materials Group",
+    "domain": "cascadematerials.com",
+    "industry": "Manufacturing",
+    "employees": 430
+  },
+  {
+    "salesforce_account_id": "001dM00003g4MufQAE",
+    "name": "Ironclad Components",
+    "domain": "ironcladcomp.com",
+    "industry": "Manufacturing",
+    "employees": 290
+  },
+  {
+    "salesforce_account_id": "001dM00003g4N4LQAU",
+    "name": "Neuralink Data Systems",
+    "domain": "neuralinkdata.com",
+    "industry": "Technology",
+    "employees": 750
+  },
+  {
+    "salesforce_account_id": "001dM00003g4B9eQAE",
+    "name": "CloudPeak Software",
+    "domain": "cloudpeak.io",
+    "industry": "Technology",
+    "employees": 400
+  },
+  {
+    "salesforce_account_id": "001dM00003g4N9BQAU",
+    "name": "DataVista Analytics",
+    "domain": "datavista.com",
+    "industry": "Technology",
+    "employees": 190
+  },
+  {
+    "salesforce_account_id": "001dM00003g4NAnQAM",
+    "name": "Quantum Edge Labs",
+    "domain": "quantumedgelabs.com",
+    "industry": "Technology",
+    "employees": 130
+  },
+  {
+    "salesforce_account_id": "001dM00003g4NHFQA2",
+    "name": "Synthetica AI",
+    "domain": "synthetica.ai",
+    "industry": "Technology",
+    "employees": 85
+  }
+]
