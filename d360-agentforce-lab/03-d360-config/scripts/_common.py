@@ -9,6 +9,7 @@ import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 
 import requests
 
@@ -90,3 +91,39 @@ def query(instance, headers, sql):
     if r.status_code not in (200, 201):
         raise RuntimeError(f"Query failed ({r.status_code}): {r.text[:500]}")
     return r.json()
+
+
+def query_rows(instance, headers, sql):
+    """Run a SQL query and normalize the response rows to dictionaries."""
+    payload = query(instance, headers, sql)
+    rows = payload.get("data") or []
+    metadata = payload.get("metadata") or {}
+    ordered_columns = sorted(
+        metadata.items(),
+        key=lambda item: item[1].get("placeInOrder", 0),
+    )
+
+    normalized = []
+    for row in rows:
+        if isinstance(row, dict):
+            normalized.append(row)
+            continue
+
+        if not isinstance(row, (list, tuple)):
+            raise RuntimeError(f"Unsupported query row shape: {type(row).__name__}")
+
+        normalized.append(
+            {
+                column_name: row[index] if index < len(row) else None
+                for index, (column_name, _details) in enumerate(ordered_columns)
+            }
+        )
+
+    return payload, normalized
+
+
+def first_scalar(row: dict[str, Any]) -> Any:
+    """Return the first scalar value from a normalized row."""
+    if not row:
+        raise RuntimeError("Expected at least one column in query result row.")
+    return next(iter(row.values()))
