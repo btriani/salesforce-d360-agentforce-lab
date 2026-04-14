@@ -5,6 +5,7 @@ to switch orgs; defaults to "my-dev-org".
 """
 import json
 import os
+import re
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -82,6 +83,16 @@ def ssot_url(instance, path):
     return connect_api_url(instance, path)
 
 
+def resolve_request_url(instance: str, endpoint: str) -> str:
+    """Resolve a full request URL from either an absolute or instance-relative endpoint."""
+    endpoint = str(endpoint).strip()
+    if endpoint.startswith(("http://", "https://")):
+        return endpoint
+    if not endpoint.startswith("/"):
+        endpoint = f"/{endpoint}"
+    return f"{instance}{endpoint}"
+
+
 def response_payload(response: requests.Response) -> Any | None:
     """Return parsed JSON when available, otherwise None."""
     try:
@@ -113,6 +124,29 @@ def request_exception_summary(exc: requests.RequestException) -> dict[str, Any]:
     if response is not None:
         summary["response"] = response_summary(response)
     return summary
+
+
+def _markdown_replay_blocks(markdown_path: Path) -> list[tuple[str, str]]:
+    """Return replay example ids paired with their JSON code-fence bodies."""
+    text = markdown_path.read_text(encoding="utf-8")
+    pattern = re.compile(
+        r"<!--\s*replay-example:\s*([A-Za-z0-9_.-]+)\s*-->\s*```json\s*(.*?)\s*```",
+        re.DOTALL,
+    )
+    return [(example_id, payload_text) for example_id, payload_text in pattern.findall(text)]
+
+
+def list_markdown_replay_examples(markdown_path: Path) -> list[str]:
+    """Return replay example ids declared in a markdown notes file."""
+    return [example_id for example_id, _payload_text in _markdown_replay_blocks(markdown_path)]
+
+
+def load_markdown_replay_example(markdown_path: Path, example_id: str) -> Any:
+    """Load a JSON replay example declared after a replay-example marker."""
+    for candidate_id, payload_text in _markdown_replay_blocks(markdown_path):
+        if candidate_id == example_id:
+            return json.loads(payload_text)
+    raise KeyError(f"Replay example '{example_id}' not found in {markdown_path}")
 
 
 def custom_dmo_api_name(spec_or_name: dict[str, Any] | str) -> str:
