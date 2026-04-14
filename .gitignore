@@ -42,3 +42,6 @@ Thumbs.db
 sfdx-project.json
 .sfdx/
 .sf/
+
+# Superpowers
+.superpowers/
