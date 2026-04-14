@@ -72,24 +72,6 @@ python generate_external_data.py
 
 The customer data platform space has several players. D360's differentiator isn't any single feature -- it's the tight integration between data unification, AI, and CRM action in one platform.
 
-```mermaid
-quadrantChart
-    title CDP Positioning: Data Breadth vs CRM Integration
-    x-axis "Standalone CDP" --> "CRM-Native CDP"
-    y-axis "Structured Data Only" --> "Data + AI + Action"
-    quadrant-1 "D360 territory"
-    quadrant-2 "AI-first, CRM-light"
-    quadrant-3 "Traditional CDP"
-    quadrant-4 "CRM with basic data"
-    Salesforce D360: [0.85, 0.88]
-    Segment (Twilio): [0.25, 0.45]
-    Tealium: [0.20, 0.40]
-    Adobe CDP: [0.40, 0.65]
-    Databricks + Unity Catalog: [0.15, 0.70]
-    Snowflake + dbt: [0.10, 0.55]
-    HubSpot: [0.75, 0.25]
-```
-
 | Dimension | Salesforce D360 | Segment / Tealium | Databricks + Unity Catalog | Snowflake + dbt |
 |-----------|----------------|-------------------|---------------------------|-----------------|
 | **CRM integration** | Native -- zero-cost CRM ingestion, bidirectional | Connector-based, one-way | No CRM, requires ETL | No CRM, requires ETL |
