@@ -107,8 +107,14 @@ print(f"Loaded {len(COMPANIES)} companies")
 CSV_VOLUME_PATH = "/Volumes/workspace/d360_lab/csv_uploads"
 
 try:
+    from pyspark.sql.functions import to_date, col
+
     df_web = spark.read.csv(f"{CSV_VOLUME_PATH}/web_analytics.csv", header=True, inferSchema=True)
+    df_web = df_web.withColumn("last_visit_date", to_date(col("last_visit_date"), "yyyy-MM-dd"))
+
     df_usage = spark.read.csv(f"{CSV_VOLUME_PATH}/product_usage.csv", header=True, inferSchema=True)
+    df_usage = df_usage.withColumn("last_login_date", to_date(col("last_login_date"), "yyyy-MM-dd"))
+
     df_firmo = spark.read.csv(f"{CSV_VOLUME_PATH}/firmographic_enrichment.csv", header=True, inferSchema=True)
 
     df_web.write.mode("overwrite").saveAsTable("web_analytics")
