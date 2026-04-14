@@ -181,7 +181,7 @@ def generate_accounts():
             "NumberOfEmployees": company["employees"],
             "AnnualRevenue": company["revenue"],
             "Description": f"B2B {company['industry'].lower()} company. Domain: {company['domain']}",
-            "Phone": fake.phone_number(),
+            "Phone": f"(555) {random.randint(200,999):03d}-{random.randint(1000,9999):04d}",
         })
     return accounts
 
@@ -215,13 +215,21 @@ def generate_contacts(account_ids_and_names):
             last_name = fake.last_name()
             role = used_roles[i] if i < len(used_roles) else random.choices(roles, weights=weights, k=1)[0]
 
+            # Email uniqueness: check for collisions within this account
+            base_email = f"{first_name.lower()}.{last_name.lower()}@{domain}"
+            email = base_email
+            suffix = 2
+            while any(c["Email"] == email for c in contacts if c["AccountId"] == account_id):
+                email = f"{first_name.lower()}.{last_name.lower()}{suffix}@{domain}"
+                suffix += 1
+
             contacts.append({
                 "AccountId": account_id,
                 "FirstName": first_name,
                 "LastName": last_name,
                 "Title": role,
-                "Email": f"{first_name.lower()}.{last_name.lower()}@{domain}",
-                "Phone": fake.phone_number(),
+                "Email": email,
+                "Phone": f"(555) {random.randint(200,999):03d}-{random.randint(1000,9999):04d}",
                 "Department": _role_to_department(role),
             })
 
@@ -490,6 +498,36 @@ def export_company_reference(accounts_with_ids):
     print("   → Phase 2 will use this to create matching external data")
 
 
+def export_contact_reference(contact_data, account_ids_and_names):
+    """
+    Save a JSON reference file with all contact details.
+    Phase 2 reads this to generate individual-level external data
+    (web analytics and product usage keyed by user email).
+    """
+    # Build account lookup: sf_id -> company dict
+    account_lookup = {sf_id: company for sf_id, company in account_ids_and_names}
+
+    reference = []
+    for contact in contact_data:
+        company = account_lookup.get(contact["AccountId"], {})
+        reference.append({
+            "email": contact["Email"],
+            "first_name": contact["FirstName"],
+            "last_name": contact["LastName"],
+            "title": contact["Title"],
+            "department": contact["Department"],
+            "account_name": company.get("name", ""),
+            "domain": company.get("domain", ""),
+            "salesforce_account_id": contact["AccountId"],
+        })
+
+    output_path = os.path.join(os.path.dirname(__file__), "contact_reference.json")
+    with open(output_path, "w") as f:
+        json.dump(reference, f, indent=2)
+    print(f"\n📁 Contact reference saved to {output_path}")
+    print(f"   → {len(reference)} contacts for Phase 2 individual-level data generation")
+
+
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
@@ -531,6 +569,9 @@ def main():
     # 5. Export reference for Phase 2
     export_company_reference(account_ids)
 
+    # 6. Export contact reference for Phase 2 individual-level data
+    export_contact_reference(contact_data, account_ids)
+
     # Summary
     print()
     print("=" * 70)
@@ -543,14 +584,11 @@ def main():
     print(f"  • {len(opp_data)} Opportunities ($50K–$500K, various stages)")
     print(f"  • {len(case_data)} Cases (support tickets, various priorities)")
     print()
-    print("D360 Interview Talking Points:")
-    print("  → 'CRM data is the foundation of D360 — it ingests natively with zero config'")
-    print("  → 'I set up realistic B2B data with email domains that align to external sources'")
-    print("  → '  This is intentional: identity resolution needs overlapping identifiers'")
-    print("  → 'The mix of opportunity stages and case priorities creates meaningful segments'")
+    print("Exports:")
+    print("  • company_reference.json — Account IDs + domains (for Phase 2 account-level data)")
+    print("  • contact_reference.json — Contact emails + roles (for Phase 2 individual-level data)")
     print()
     print("Next: Phase 2 — Create external data in Databricks (web analytics, product usage)")
-    print("       The company_reference.json file bridges CRM ↔ external data")
 
 
 if __name__ == "__main__":

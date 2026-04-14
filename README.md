@@ -5,15 +5,15 @@ Hands-on pipeline from raw data to AI agent: CRM data + Databricks Delta tables 
 ```mermaid
 graph LR
     subgraph Sources
-        CRM["Salesforce CRM<br/>25 Accounts, 62 Contacts<br/>40 Opps, 18 Cases"]
-        DBX["Databricks Delta Lake<br/>Web Analytics<br/>Product Usage<br/>Firmographic"]
+        CRM["Salesforce CRM<br/>25 Accounts, ~55 Contacts<br/>~35 Opps, 18 Cases"]
+        DBX["Databricks Delta Lake<br/>Web Analytics (~44 rows, user_email)<br/>Product Usage (~38 rows, user_email)<br/>Firmographic (25 rows, domain)"]
     end
 
     subgraph D360["Salesforce Data Cloud (D360)"]
         direction TB
         DLO["Data Lake Objects<br/>(raw, source schema)"]
         DMO["Data Model Objects<br/>(normalized canonical)"]
-        IR["Identity Resolution<br/>(email ↔ domain ↔ company)"]
+        IR["Identity Resolution<br/>(exact email match via<br/>Contact Point Email)"]
         CI["Calculated Insights<br/>+ Segments"]
     end
 
@@ -63,14 +63,14 @@ python generate_external_data.py
 
 | # | Phase | What It Does | D360 Concepts |
 |---|-------|-------------|---------------|
-| 01 | [Synthetic CRM Data](d360-agentforce-lab/01-synthetic-data/) | Generate and load B2B data into Salesforce via REST API | CRM-native ingestion, data model foundation |
-| 02 | [External Data](d360-agentforce-lab/02-external-data/) | Create Delta tables in Databricks via SQL API | External sources, Zero Copy, Query Federation |
-| 03 | [D360 Configuration](d360-agentforce-lab/03-d360-config/) | Connect Databricks, create data streams, map DMOs | Data Streams, DLOs, DMOs, Identity Resolution |
-| 04 | [Agentforce Agent](d360-agentforce-lab/04-agentforce-agent/) | Design agent grounded in unified D360 data | Prompt templates, Trust Layer, grounding |
+| 01 | [Synthetic CRM Data](d360-agentforce-lab/01-synthetic-data/) | Generate ~55 contacts, ~35 opps, 25 accounts, 18 cases and load into Salesforce via REST API | CRM-native ingestion, data model foundation |
+| 02 | [External Data](d360-agentforce-lab/02-external-data/) | Create ~44 web analytics rows, ~38 product usage rows, 25 firmographic rows as Delta tables in Databricks | External sources, Zero Copy, Query Federation |
+| 03 | [D360 Configuration](d360-agentforce-lab/03-d360-config/) | Connect Databricks, create data streams, map DMOs, configure IR with email matching, build Calculated Insights and Segments | Data Streams, DLOs, DMOs, Identity Resolution, Calculated Insights, Segments |
+| 04 | [Agentforce Agent](d360-agentforce-lab/04-agentforce-agent/) | Design agent with prompt templates grounded in unified D360 data | Prompt templates, Trust Layer, grounding |
 
 ## How D360 Compares to Alternatives
 
-The customer data platform space has several players. D360's differentiator isn't any single feature — it's the tight integration between data unification, AI, and CRM action in one platform.
+The customer data platform space has several players. D360's differentiator isn't any single feature -- it's the tight integration between data unification, AI, and CRM action in one platform.
 
 ```mermaid
 quadrantChart
@@ -92,16 +92,16 @@ quadrantChart
 
 | Dimension | Salesforce D360 | Segment / Tealium | Databricks + Unity Catalog | Snowflake + dbt |
 |-----------|----------------|-------------------|---------------------------|-----------------|
-| **CRM integration** | Native — zero-cost CRM ingestion, bidirectional | Connector-based, one-way | No CRM, requires ETL | No CRM, requires ETL |
+| **CRM integration** | Native -- zero-cost CRM ingestion, bidirectional | Connector-based, one-way | No CRM, requires ETL | No CRM, requires ETL |
 | **External data** | Query Federation (Zero Copy), connectors, Ingestion API | SDKs, connectors | Native (it IS the lake) | Native (it IS the warehouse) |
 | **Identity resolution** | Built-in, configurable match/reconciliation rules | Built-in, event-stream focused | Manual (write your own) | Manual (write your own) |
 | **AI/Agent integration** | Agentforce natively grounded in unified data | None built-in | Mosaic AI, but no CRM context | Cortex, but no CRM context |
-| **Zero Copy** | Yes — Databricks, Snowflake, BigQuery, Redshift | No | N/A (data is already there) | N/A |
+| **Zero Copy** | Yes -- Databricks, Snowflake, BigQuery, Redshift | No | N/A (data is already there) | N/A |
 | **Time to value** | Fast for Salesforce shops, config-heavy for external data | Fast for web/mobile events | Requires engineering team | Requires engineering team |
 | **Vendor lock-in** | High (Salesforce ecosystem) | Medium | Low (open formats) | Medium |
 | **Best for** | Enterprises already on Salesforce wanting unified customer view + AI agents | Marketing teams needing event tracking + audience activation | Data teams wanting full control over the lakehouse | Analytics teams wanting governed warehouse |
 
-> **Honest take:** D360 shines when you're already in the Salesforce ecosystem and want AI agents that act on unified data. If your data already lives in Databricks/Snowflake and you don't use Salesforce CRM, D360 adds a layer you may not need. The Zero Copy federation is genuinely useful — it avoids the "copy everything into our platform" trap that most CDPs fall into. The weakness is the configuration complexity: DMO mapping, identity resolution setup, and Contact Point plumbing require significant upfront effort.
+> **Honest take:** D360 shines when you're already in the Salesforce ecosystem and want AI agents that act on unified data. If your data already lives in Databricks/Snowflake and you don't use Salesforce CRM, D360 adds a layer you may not need. The Zero Copy federation is genuinely useful -- it avoids the "copy everything into our platform" trap that most CDPs fall into. The weakness is the configuration complexity: DMO mapping, identity resolution setup, and Contact Point plumbing require significant upfront effort.
 
 ## Architecture Deep Dive
 
@@ -116,16 +116,16 @@ graph TB
 
     subgraph "Phase 2: External Data"
         PY2["Python + Databricks SQL API"] -->|"REST API"| DBX["Databricks<br/>Delta Tables"]
-        DBX -->|"Query Federation<br/>(Zero Copy, live queries)"| DLO_EXT["DLOs: Web Analytics<br/>Product Usage<br/>Firmographic"]
+        DBX -->|"Query Federation<br/>(Zero Copy, live queries)"| DLO_EXT["DLOs: Web Analytics<br/>(user_email keyed)<br/>Product Usage<br/>(user_email keyed)<br/>Firmographic<br/>(domain keyed)"]
     end
 
     subgraph "Phase 3: D360 Unification"
         DLO_CRM --> DMO["Data Model Objects<br/>(normalized schema)"]
         DLO_EXT --> DMO
-        DMO --> IR["Identity Resolution"]
-        IR --> UP["Unified Profiles"]
+        DMO --> IR["Identity Resolution<br/>(exact email match)"]
+        IR --> UP["Unified Individuals"]
         UP --> CI["Calculated Insights<br/>(Health Score)"]
-        CI --> SEG["Segments<br/>(At Risk / Upsell Ready)"]
+        CI --> SEG["Segments<br/>(At Risk / Healthy / Upsell Ready)"]
     end
 
     subgraph "Phase 4: AI Action"
@@ -140,50 +140,47 @@ graph TB
 
 ```mermaid
 graph LR
-    subgraph "CRM (Salesforce)"
-        C["Contact: jane.doe@apexfintech.com"]
+    subgraph "CRM Contact (Salesforce)"
+        C["Contact Point Email:<br/>jane.doe@apexfintech.com"]
     end
 
     subgraph "Web Analytics (Databricks)"
-        W["Domain: apexfintech.com<br/>500 page views, 3 demo visits"]
+        W["user_email:<br/>jane.doe@apexfintech.com<br/>12 page views, 2 demo visits"]
     end
 
     subgraph "Product Usage (Databricks)"
-        P["Domain: apexfintech.com<br/>EXT-42819, Score: 82/100"]
+        P["user_email:<br/>jane.doe@apexfintech.com<br/>logins: 18, feature_adoption: 72%"]
     end
 
-    subgraph "Firmographic (Databricks)"
-        F["Company: Apex Financial Technologies<br/>Series C, 450 employees"]
-    end
-
-    C -->|"email domain match"| UP["Unified Profile:<br/>Apex Financial Technologies"]
-    W -->|"domain match"| UP
-    P -->|"domain match"| UP
-    F -->|"company name + domain"| UP
+    C -->|"exact email match"| UP["Unified Individual:<br/>jane.doe@apexfintech.com<br/>(3 sources matched)"]
+    W -->|"exact email match"| UP
+    P -->|"exact email match"| UP
 ```
 
 ### Data Intentionally Designed for Identity Resolution Testing
 
 | Challenge | What We Did | Why It Matters |
 |-----------|------------|----------------|
-| Partial coverage | 5 of 25 companies excluded from web analytics | Tests how D360 handles missing data across sources |
+| Partial coverage | Not all contacts appear in web analytics or product usage | Tests how D360 handles missing data across sources |
 | Foreign keys | Product usage uses `EXT-XXXXX` IDs, not Salesforce IDs | Proves identity resolution works without shared keys |
 | Name variations | ~20% of firmographic names have "Inc.", "LLC", double spaces | Tests fuzzy matching in reconciliation rules |
-| Domain matching | Contact emails use company domains; web analytics uses same domains | Shows the email-to-domain matching that powers IR |
+| Individual-level keying | Web analytics and product usage keyed by `user_email`, not company domain | Enables individual-level IR matching via Contact Point Email |
+| Role-based exclusions | Generic emails (info@, support@) excluded from external data | Prevents false matches on shared mailbox addresses |
 
 ## Key D360 Vocabulary
 
 | Term | What It Actually Means |
 |------|----------------------|
 | **Data Stream** | A pipeline that brings data into Data Cloud (like an ETL job) |
-| **DLO (Data Lake Object)** | Raw data container — preserves source schema as-is |
-| **DMO (Data Model Object)** | Normalized canonical model — the "T" in ELT |
+| **DLO (Data Lake Object)** | Raw data container -- preserves source schema as-is |
+| **DMO (Data Model Object)** | Normalized canonical model -- the "T" in ELT |
 | **Query Federation** | D360 queries external data live (Databricks, Snowflake) without copying it |
-| **Zero Copy** | Marketing term for Query Federation + file sharing — data doesn't move |
+| **Zero Copy** | Marketing term for Query Federation + file sharing -- data doesn't move |
 | **Identity Resolution** | Matching records across sources into unified profiles using match rules |
+| **Contact Point Email** | Bridge object linking Individual DMO to email addresses -- the key to IR matching |
 | **Calculated Insight** | A computed metric (e.g., Health Score) built on unified data |
 | **Segment** | A group of entities filtered by criteria (e.g., "At Risk" accounts) |
-| **Agentforce** | AI agent framework — value is proportional to the data it's grounded in |
+| **Agentforce** | AI agent framework -- value is proportional to the data it's grounded in |
 | **Einstein Trust Layer** | Governance layer ensuring agents only access permitted data |
 | **Profile vs Engagement** | Profile = what something IS (attributes). Engagement = what something DOES (events) |
 
@@ -196,19 +193,33 @@ graph LR
 | Databricks | Delta Lake tables, Serverless SQL Warehouse, Unity Catalog |
 | Agentforce Studio | AI agent design, prompt templates, grounded actions |
 | SF CLI (`sf`) | OAuth browser-flow authentication (no SOAP API) |
-| GitHub Actions | (planned) Automated data refresh |
+| GitHub Actions | Automated data refresh |
 
 ## Observations from This Build
 
-1. **Query Federation works well.** Connecting Databricks to D360 was straightforward — enter hostname, HTTP path, PAT, done. The "Direct Access (Accelerated)" stream type queries live and caches locally.
+1. **Query Federation works well.** Connecting Databricks to D360 was straightforward -- enter hostname, HTTP path, PAT, done. The "Direct Access (Accelerated)" stream type queries live and caches locally.
 
-2. **DMO mapping is the real work.** The two-layer model (DLO → DMO) makes architectural sense but the UI-based mapping is manual and tedious. In production, use DevOps Data Kits and `sf project deploy start` for CI/CD.
+2. **DMO mapping is the real work.** The two-layer model (DLO to DMO) makes architectural sense but the UI-based mapping is manual and tedious. In production, use DevOps Data Kits and `sf project deploy start` for CI/CD.
 
-3. **Identity Resolution has a steep setup curve.** The Individual DMO needs Contact Point Email/Phone objects with formula-based composite primary keys. The Sales Cloud data bundle helps but doesn't auto-configure everything. Understanding the architecture (Individual → Contact Points via Party ID → Match Rules) matters more than memorizing the UI steps.
+3. **Individual-level data is what makes IR work.** The original design used company-level web analytics and product usage (keyed by domain). Domain matching produced account-level unification but couldn't match individuals. Switching to `user_email` as the key field -- so each row represents one person's activity, not one company's aggregate -- made Contact Point Email matching work at the individual level. This is the single most important architectural decision in the pipeline.
 
-4. **CRM-native ingestion is a genuine advantage.** Zero-cost, zero-config ingestion from Salesforce objects is something competitors can't match. Building a CDP inside the CRM platform avoids the connector tax that standalone CDPs pay.
+4. **Identity Resolution has a steep setup curve.** The Individual DMO needs Contact Point Email/Phone objects with formula-based composite primary keys. The Sales Cloud data bundle helps but doesn't auto-configure everything. Understanding the architecture (Individual -> Contact Points via Party ID -> Match Rules) matters more than memorizing the UI steps.
 
-5. **Agentforce without D360 is limited.** An agent that only sees CRM data misses the full picture. D360 is what turns "this account has a deal" into "this account has a deal, declining usage, and 3 escalated tickets."
+5. **CRM-native ingestion is a genuine advantage.** Zero-cost, zero-config ingestion from Salesforce objects is something competitors can't match. Building a CDP inside the CRM platform avoids the connector tax that standalone CDPs pay.
+
+6. **Agentforce without D360 is limited.** An agent that only sees CRM data misses the full picture. D360 is what turns "this account has a deal" into "this account has a deal, declining usage, and 3 escalated tickets."
+
+## Lessons from Building This Lab
+
+The biggest lesson was about data granularity and identity resolution.
+
+The first version of this lab used **company-level** external data: one row per company in web analytics (keyed by domain), one row per company in product usage (keyed by domain). D360's Identity Resolution matched these to accounts via domain, which produced a unified account view -- but not unified individuals.
+
+The problem: D360's IR is designed around the **Individual** DMO and **Contact Point Email**. It matches people, not companies. When external data is keyed by domain, there's no email to match against. The IR ruleset can match `jane.doe@apexfintech.com` (from CRM) to `jane.doe@apexfintech.com` (from web analytics) -- but only if the web analytics data actually contains that email address.
+
+The fix was to redesign the external data to be **individual-level**: each row in web analytics and product usage represents one person's activity, keyed by `user_email`. This meant generating ~44 web analytics rows (one per active contact, excluding role-based emails like info@ and support@) and ~38 product usage rows, rather than the original 20 and 25 company-level rows.
+
+The result: IR now matches a CRM contact to their web analytics record and their product usage record via exact email match through Contact Point Email. Three sources, one unified individual. This is how D360 is designed to work -- the data model just needs to match the platform's assumptions about granularity.
 
 ## License
 

@@ -1,66 +1,123 @@
 # Phase 2: External Data (Outside Salesforce)
 
-## What This Does
+Generate three external data sources that simulate data living outside Salesforce CRM. This is the data that makes D360 valuable — without it, your AI agent only sees sales-reported CRM data.
 
-Generates three external data sources that simulate data living outside Salesforce CRM. This is the data that makes D360 valuable — without it, your CRM only has sales-reported data. With D360, these signals are unified with CRM data through identity resolution.
+## Data Model
+
+```mermaid
+graph TB
+    subgraph "Individual-Level (IR-matchable)"
+        WA["Web Analytics<br/>~44 rows<br/>keyed by user_email"]
+        PU["Product Usage<br/>~38 rows<br/>keyed by user_email"]
+    end
+
+    subgraph "Account-Level (DMO relationship)"
+        FE["Firmographic Enrichment<br/>25 rows<br/>keyed by domain"]
+    end
+
+    CR["contact_reference.json<br/>(from Phase 1)"]
+    CO["company_reference.json<br/>(from Phase 1)"]
+
+    CR -->|"emails, roles"| WA
+    CR -->|"emails, roles"| PU
+    CO -->|"domains, industries"| FE
+
+    subgraph "Phase 3: D360"
+        IR["Identity Resolution<br/>(matches user_email ↔ Contact email)"]
+        DMO["DMO Relationship<br/>(matches domain ↔ Account website)"]
+    end
+
+    WA -->|"user_email"| IR
+    PU -->|"user_email"| IR
+    FE -->|"domain"| DMO
+```
 
 ## Data Sources
 
-| Table | Records | Match Key | Simulates |
-|-------|---------|-----------|-----------|
-| Web Analytics | 20 | `company_domain` | Google Analytics / Mixpanel |
-| Product Usage | 25 | `account_id_external` (EXT-XXXXX) | Product telemetry / backend logs |
-| Firmographic | 25 | `company_name` + `domain` | ZoomInfo / Clearbit enrichment |
+### Web Analytics (Individual-Level)
 
-All three tables are stored as **Delta tables** in Databricks (`workspace.d360_lab` schema), ready for D360 Zero Copy or Query Federation — no CSV uploads needed.
+Simulates Google Analytics / Mixpanel data — individual website visitor behavior.
 
-## Identity Resolution Design
+| Field | Type | Purpose |
+|-------|------|---------|
+| `user_email` | STRING | **Primary key + IR match key** |
+| `company_domain` | STRING | Account-level grouping |
+| `page_views_30d` | INT | Engagement signal |
+| `product_pages_viewed` | INT | Interest depth |
+| `demo_page_visits` | INT | Sales intent signal |
+| `avg_session_minutes` | DOUBLE | Engagement quality |
+| `last_visit_date` | DATE | Recency signal |
 
-Intentional data quality challenges built in:
-- **~80% coverage** in web analytics (5 companies missing — tests partial matching)
-- **Different ID formats** in product usage (EXT-XXXXX, not Salesforce IDs)
-- **Name variations** in firmographic data (~20% have "Inc.", "LLC", etc.)
+**Coverage:** ~80% of contacts. VP of Sales and Head of Customer Success excluded (they don't browse the product website), plus 5 random exclusions to simulate incomplete tracking.
 
-These aren't bugs — they're realistic data integration challenges that D360 identity resolution is designed to handle.
+### Product Usage (Individual-Level)
 
-## How It Was Built
+Simulates product backend telemetry — API logs, feature usage, login activity.
 
-### Databricks Setup (via REST API)
-The Delta tables were created programmatically using the Databricks SQL Statement Execution API — no manual UI clicks needed:
+| Field | Type | Purpose |
+|-------|------|---------|
+| `user_email` | STRING | **Primary key + IR match key** |
+| `company_domain` | STRING | Account-level grouping |
+| `account_id_external` | STRING | External system ID (EXT-XXXXX) |
+| `feature_adoption_score` | INT | Health signal (15-95 range) |
+| `api_calls_30d` | INT | Usage volume |
+| `active_users` | INT | Per-company active user count |
+| `last_login_date` | DATE | Recency / churn signal |
+| `data_volume_gb` | DOUBLE | Utilization metric |
 
-1. Authenticated via Personal Access Token (PAT)
-2. Used the existing Serverless Starter Warehouse
-3. Created schema `workspace.d360_lab`
-4. Created and populated all 3 tables via SQL statements
+**Coverage:** ~70% of contacts. Non-technical roles excluded (VP of Sales, Head of CS, Director of Product don't log into the product).
 
-```python
-# Example: executing SQL via Databricks REST API
-requests.post(
-    f"{DATABRICKS_HOST}/api/2.0/sql/statements/",
-    headers={"Authorization": f"Bearer {token}"},
-    json={"warehouse_id": warehouse_id, "statement": sql, "wait_timeout": "50s"}
-)
+### Firmographic Enrichment (Account-Level)
+
+Simulates ZoomInfo / Clearbit enrichment data — company-level context.
+
+| Field | Type | Purpose |
+|-------|------|---------|
+| `domain` | STRING | **Primary key + DMO match key** |
+| `company_name` | STRING | ~20% have variations (Inc., LLC, etc.) |
+| `employee_count` | INT | Company size |
+| `annual_revenue_estimate` | LONG | Revenue estimate |
+| `funding_stage` | STRING | Investment stage |
+| `tech_stack_tags` | STRING | Technology tags |
+
+**Coverage:** 100% of accounts. This is account-level data — it connects to the Account DMO via domain, NOT through Identity Resolution.
+
+## Intentional Data Quality Challenges
+
+| Challenge | What | Why It Matters |
+|-----------|------|---------------|
+| Partial coverage | Web ~80%, Product ~70% | D360 builds profiles from whatever sources are available |
+| Role-based exclusions | Execs excluded from product usage | Not all people appear in all systems |
+| Foreign key mismatch | EXT-XXXXX IDs in product usage | IR works on attributes (email), not foreign keys |
+| Name variations | ~20% of firmographic names differ | Tests fuzzy matching in reconciliation rules |
+
+> **Lesson Learned:** Our first version keyed all external data by company domain only. D360 Identity Resolution silently produced zero matches — no error, no warning. The root cause: IR matches **people**, not companies. External data must include individual-level identifiers (emails) that match CRM Contact emails. Company-level data (like firmographic) connects through DMO relationships instead.
+
+## Setup
+
+```bash
+# Prerequisites: Phase 1 must be run first (generates reference files)
+
+# Generate CSVs locally
+cd d360-agentforce-lab/02-external-data
+python generate_external_data.py
+
+# To create Delta tables in Databricks:
+# 1. Upload csv_exports/ to a Databricks volume
+# 2. Import databricks_create_delta_tables.py as a notebook
+# 3. Run All
 ```
 
-### D360 Connection Details
-These are used in Phase 3 to connect Databricks to Data Cloud:
+## Output
 
-| Parameter | Value |
-|-----------|-------|
-| Server Hostname | `dbc-3cd549f9-402b.cloud.databricks.com` |
-| Port | `443` |
-| HTTP Path | `/sql/1.0/warehouses/dbc63533d8190bea` |
-| Catalog | `workspace` |
-| Schema | `d360_lab` |
+- `csv_exports/web_analytics.csv` — individual-level web behavior
+- `csv_exports/product_usage.csv` — individual-level product telemetry
+- `csv_exports/firmographic_enrichment.csv` — account-level enrichment
 
-## D360 Concepts
+## Field Notes
 
-- **Zero Copy Federation:** D360 queries Delta tables directly in Databricks — no data movement. This is D360's fastest-growing capability (341% YoY).
-- **Query Federation:** Alternative to Zero Copy — D360 runs SQL against the Databricks SQL Warehouse live.
-- **External data ingestion:** In production, these tables represent the data siloed in data warehouses, product databases, and third-party enrichment providers.
+**Why individual-level, not account-level?** D360 Identity Resolution works at the Individual level — it creates Unified Individual Profiles by matching Contact Point objects (email, phone) across sources. If your external data only has company domains, IR has nothing to match. You need person-level identifiers that overlap with CRM Contact data.
 
-## Files
+**Why keep firmographic at account level?** Firmographic data describes companies, not people. It doesn't make sense to have per-person funding stage or tech stack. This data connects to D360 through DMO relationships (domain → Account), not through IR. Teaching both patterns is more valuable than forcing everything through IR.
 
-- `generate_external_data.py` — standalone script to generate data locally (also exports CSVs as fallback)
-- `databricks_create_delta_tables.py` — Databricks notebook version (importable into workspace)
-- `csv_exports/` — CSV fallback files (generated by the local script)
+**Why EXT-XXXXX IDs?** Real product databases don't use Salesforce Account IDs. The external ID format demonstrates that Identity Resolution works on attributes (email, domain, name), not shared primary keys. After IR unifies the data, the external ID becomes a useful cross-reference — but it's not the matching key.
