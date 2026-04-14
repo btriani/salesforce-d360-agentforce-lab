@@ -1,6 +1,14 @@
 # Salesforce Bug Report Draft — Custom DMO API HTTP 500 on Multi-Field Payload
 
-This document is a ready-to-file bug report for the Data Cloud Connect REST API custom DMO creation endpoint. File at [issues.salesforce.com](https://issues.salesforce.com) or via a Salesforce support case.
+This document is a ready-to-file bug report for the Data Cloud Connect REST API custom DMO creation endpoint.
+
+## Where to File
+
+`issues.salesforce.com` (now `help.salesforce.com/s/issues`) is a **read-only portal** that shows issues Salesforce has already acknowledged. It does not accept new submissions. Developer Edition orgs do not include support case access by default, so the realistic channels for this report are:
+
+1. **Trailblazer Community — Data Cloud group** (recommended): https://trailhead.salesforce.com/trailblazer-community/topics/datacloud — public, searchable, monitored by Salesforce engineers. A copy-paste-ready post is provided in the "Trailblazer Community Post" section below.
+2. **Salesforce Developer Forums — Data Cloud category**: https://developer.salesforce.com/forums
+3. **Log a Support Case** (only if your Salesforce account has paid support): [Log a Support Case for Data Cloud](https://help.salesforce.com/s/articleView?id=001461744&language=en_US&type=1)
 
 ---
 
@@ -168,6 +176,55 @@ None is fully satisfactory for a programmatic deployment:
 2. If this is an intentional Developer Edition restriction, publish it on the [Developer Edition Limits and Guidelines for Data 360](https://help.salesforce.com/s/articleView?id=data.c360_a_limits_and_guidelines_dev_ed.htm&language=en_US&type=5) page. Today, nothing on that page hints at a field-count or creation-method restriction.
 3. If this is a bug, fix the `POST /ssot/data-model-objects` endpoint to accept multi-field payloads as the API spec already documents, or return a specific HTTP 400 that identifies the precise unsupported input so that clients can adapt.
 
+## Trailblazer Community Post
+
+Copy and paste the block below into a new post in the [Data Cloud group on Trailblazer Community](https://trailhead.salesforce.com/trailblazer-community/topics/datacloud). Adjust the org details if needed.
+
+---
+
+**Title:** Data Cloud Connect API `POST /ssot/data-model-objects` returns HTTP 500 `UNKNOWN_EXCEPTION` for any multi-field custom DMO payload on Developer Edition
+
+**Post body:**
+
+Hi all — looking for confirmation from Salesforce engineering or anyone else seeing this.
+
+**Environment**
+- Developer Edition with Data Cloud (Data 360) enabled
+- API v64.0
+- Endpoint: `POST /services/data/v64.0/ssot/data-model-objects`
+- Auth: bearer token from `sf org display --target-org <alias> --json`
+
+**Observed behavior**
+- Payload with **one** `Text` primary-key field: **HTTP 201 Created** (works)
+- Payload with **two** `Text` fields (primary key + one more): **HTTP 500 `UNKNOWN_EXCEPTION`**
+
+Response body of the failing call:
+```json
+[{"errorCode":"UNKNOWN_EXCEPTION","message":"An unexpected error occurred. Please include this ErrorId if you contact support: 1169266788-367379 (-2106090025)"}]
+```
+
+**Expected behavior**
+The [Connect API spec](https://developer.salesforce.com/docs/data/connectapi/references/spec) documents `fields` as a multi-element array (Available Version: 61.0) and the sample payload in the docs uses multiple fields. Documented failure modes are HTTP 400 only.
+
+**Ruled out**
+- Field count: not a Dev Edition documented limit (the [Developer Edition Limits page](https://help.salesforce.com/s/articleView?id=data.c360_a_limits_and_guidelines_dev_ed.htm) lists count-based limits only, and the [CDP Limits page](https://help.salesforce.com/s/articleView?id=sf.c360_a_limits_and_guidelines_cdp.htm) sets per-DMO field limits at 800 per type / 1,050 total, org-wide)
+- Data type: fails with two `Text` fields, no Number or Date involved
+- Validation (HTTP 400): not triggered; server returns 500
+- Duplicate name: probe uses a unique timestamped name with a preflight check
+- Known Issue: no matching entry on `help.salesforce.com/s/issues`
+
+**Reproduction**
+Full reproduction scripts and artifacts: https://github.com/btriani/salesforce-d360-agentforce-lab (see `d360-agentforce-lab/03-d360-config/scripts/probes/` and `artifacts/`). Salesforce support ErrorId for log lookup: `1169266788-367379 (-2106090025)`.
+
+**Questions**
+1. Is this a known bug in Developer Edition, and if so where is it tracked?
+2. If this is an intentional restriction, can it be added to the [Developer Edition Limits and Guidelines for Data 360](https://help.salesforce.com/s/articleView?id=data.c360_a_limits_and_guidelines_dev_ed.htm) page?
+3. Is the [Create a Custom DMO from an Existing DLO](https://help.salesforce.com/s/articleView?id=sf.c360_a_create_custom_dmo_from_existing.htm) UI path the only supported workflow on Developer Edition right now?
+
+Thanks!
+
+---
+
 ## References
 
 - [Developer Edition Limits and Guidelines for Data 360](https://help.salesforce.com/s/articleView?id=data.c360_a_limits_and_guidelines_dev_ed.htm&language=en_US&type=5)
@@ -176,3 +233,6 @@ None is fully satisfactory for a programmatic deployment:
 - [Data 360 Connect REST API spec — `POST /ssot/data-model-objects`](https://developer.salesforce.com/docs/data/connectapi/references/spec)
 - [Create a Custom DMO from an Existing DLO (UI path)](https://help.salesforce.com/s/articleView?id=sf.c360_a_create_custom_dmo_from_existing.htm)
 - [REST API Status Codes and Error Responses — `UNKNOWN_EXCEPTION`](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/errorcodes.htm)
+- [Salesforce Known Issues portal](https://help.salesforce.com/s/issues) (read-only; does not accept new submissions)
+- [Trailblazer Community — Data Cloud group](https://trailhead.salesforce.com/trailblazer-community/topics/datacloud) (recommended submission channel for Developer Edition users)
+- [Log a Support Case for Data Cloud](https://help.salesforce.com/s/articleView?id=001461744&language=en_US&type=1) (requires paid support plan)
