@@ -1,26 +1,45 @@
-account_id_external,company_name,company_domain,feature_adoption_score,api_calls_30d,active_users,last_login_date,data_volume_gb
-EXT-63516,Apex Financial Technologies,apexfintech.com,18,688,3,2026-03-19,49.6
-EXT-63723,Meridian Payments Group,meridianpay.io,21,2397,3,2026-02-27,40.0
-EXT-43763,Vaultline Digital Banking,vaultline.com,41,1581,2,2026-02-15,4.1
-EXT-47711,ClearEdge Capital Systems,clearedgecap.com,41,295,3,2026-03-17,19.2
-EXT-54139,Fintrust Solutions,fintrust.io,85,30292,16,2026-04-08,27.0
-EXT-33753,Novus Health Analytics,novushealth.com,83,31121,108,2026-04-06,11.9
-EXT-95764,BioSync Medical Systems,biosyncmed.com,38,1372,1,2026-02-14,36.2
-EXT-38652,CarePoint Digital,carepointdigital.com,75,30136,19,2026-04-06,37.7
-EXT-20502,MedLattice Inc,medlattice.com,86,21791,18,2026-04-09,45.4
-EXT-52021,Helix Genomics Platform,helixgenomics.io,94,13341,26,2026-04-07,44.1
-EXT-63652,UrbanThread Retail,urbanthread.com,70,23500,107,2026-04-06,10.1
-EXT-54151,Shopwise Commerce,shopwise.io,82,5282,52,2026-04-08,34.9
-EXT-35333,FreshCart Marketplace,freshcart.com,70,46947,43,2026-04-07,37.3
-EXT-40308,Lumenaire Brands,lumenaire.com,82,48028,22,2026-04-13,6.1
-EXT-79697,TrueNorth Outdoor Co,truenorthoutdoor.com,31,1371,2,2026-02-26,39.4
-EXT-68211,Forgewell Industries,forgewell.com,76,32317,249,2026-04-09,10.4
-EXT-12702,Steelvine Manufacturing,steelvine.com,79,9952,158,2026-04-13,48.1
-EXT-64627,Precision Dynamics Corp,precisiondynamics.com,32,2665,5,2026-02-22,15.1
-EXT-23121,Cascade Materials Group,cascadematerials.com,85,31112,32,2026-04-09,23.3
-EXT-26838,Ironclad Components,ironcladcomp.com,88,30494,36,2026-04-11,18.3
-EXT-37212,Neuralink Data Systems,neuralinkdata.com,33,2966,4,2026-03-19,41.4
-EXT-72806,CloudPeak Software,cloudpeak.io,90,48582,31,2026-04-12,26.8
-EXT-70276,DataVista Analytics,datavista.com,67,26610,35,2026-04-06,4.1
-EXT-95876,Quantum Edge Labs,quantumedgelabs.com,94,23045,10,2026-04-08,21.0
-EXT-31755,Synthetica AI,synthetica.ai,44,294,4,2026-03-28,2.9
+user_email,company_domain,account_id_external,feature_adoption_score,api_calls_30d,active_users,last_login_date,data_volume_gb
+joshua.walker@apexfintech.com,apexfintech.com,EXT-19456,60,2393,2,2026-04-08,45.9
+jill.rhodes@apexfintech.com,apexfintech.com,EXT-19456,75,4136,2,2026-04-13,43.9
+patricia.miller@meridianpay.io,meridianpay.io,EXT-10516,70,4136,2,2026-04-09,13.0
+robert.johnson@meridianpay.io,meridianpay.io,EXT-10516,62,3748,2,2026-04-14,15.4
+anthony.gonzalez@vaultline.com,vaultline.com,EXT-79862,19,15,1,2026-03-13,40.6
+debra.gardner@clearedgecap.com,clearedgecap.com,EXT-11573,78,1512,2,2026-04-07,21.7
+jeffrey.lawrence@clearedgecap.com,clearedgecap.com,EXT-11573,62,3397,2,2026-04-12,30.5
+linda.wolfe@fintrust.io,fintrust.io,EXT-64255,42,181,3,2026-02-17,16.7
+matthew.moore@fintrust.io,fintrust.io,EXT-64255,27,148,3,2026-02-20,11.7
+susan.rogers@fintrust.io,fintrust.io,EXT-64255,37,19,3,2026-03-13,37.1
+melanie.munoz@novushealth.com,novushealth.com,EXT-27845,92,2366,1,2026-04-12,26.4
+amanda.dudley@biosyncmed.com,biosyncmed.com,EXT-16224,73,2480,2,2026-04-10,8.6
+nicholas.arnold@biosyncmed.com,biosyncmed.com,EXT-16224,66,4061,2,2026-04-14,28.5
+janet.williams@carepointdigital.com,carepointdigital.com,EXT-16259,72,1579,1,2026-04-12,31.6
+jeremy.roberts@medlattice.com,medlattice.com,EXT-40140,76,2001,2,2026-04-08,7.9
+christopher.hall@medlattice.com,medlattice.com,EXT-40140,62,4620,2,2026-04-08,46.9
+cynthia.diaz@helixgenomics.io,helixgenomics.io,EXT-48293,17,94,1,2026-02-22,12.0
+joseph.zuniga@urbanthread.com,urbanthread.com,EXT-67551,19,254,1,2026-02-20,5.0
+frank.gray@shopwise.io,shopwise.io,EXT-64751,20,129,3,2026-02-13,28.9
+veronica.bowman@shopwise.io,shopwise.io,EXT-64751,37,61,3,2026-03-04,30.8
+angela.cohen@shopwise.io,shopwise.io,EXT-64751,19,253,3,2026-03-16,9.0
+jeremy.johnson@freshcart.com,freshcart.com,EXT-34704,23,95,1,2026-02-18,26.0
+leslie.adams@lumenaire.com,lumenaire.com,EXT-32523,44,288,2,2026-03-27,12.1
+jason.hahn@lumenaire.com,lumenaire.com,EXT-32523,22,225,2,2026-03-06,26.5
+robin.ellis@truenorthoutdoor.com,truenorthoutdoor.com,EXT-96093,75,2552,1,2026-04-09,38.5
+joseph.wright@forgewell.com,forgewell.com,EXT-83361,91,2049,1,2026-04-13,39.8
+reginald.robinson@steelvine.com,steelvine.com,EXT-83269,45,29,2,2026-03-04,3.6
+whitney.hicks@steelvine.com,steelvine.com,EXT-83269,44,35,2,2026-02-17,15.0
+christopher.williams@precisiondynamics.com,precisiondynamics.com,EXT-56357,76,583,1,2026-04-10,10.2
+bryan.james@cascadematerials.com,cascadematerials.com,EXT-80117,18,91,3,2026-03-09,19.8
+wendy.rice@cascadematerials.com,cascadematerials.com,EXT-80117,31,143,3,2026-03-19,22.9
+tasha.valencia@cascadematerials.com,cascadematerials.com,EXT-80117,26,128,3,2026-03-22,30.6
+alexander.le@ironcladcomp.com,ironcladcomp.com,EXT-98850,15,193,2,2026-03-11,44.5
+erin.herrera@ironcladcomp.com,ironcladcomp.com,EXT-98850,32,88,2,2026-03-27,1.6
+joseph.davidson@neuralinkdata.com,neuralinkdata.com,EXT-26475,73,2319,2,2026-04-09,31.2
+daniel.graham@neuralinkdata.com,neuralinkdata.com,EXT-26475,60,4055,2,2026-04-13,33.0
+shawn.mckay@cloudpeak.io,cloudpeak.io,EXT-29686,83,4572,2,2026-04-08,28.1
+nancy.baker@cloudpeak.io,cloudpeak.io,EXT-29686,95,2653,2,2026-04-09,35.7
+rita.harrell@datavista.com,datavista.com,EXT-14336,77,4851,2,2026-04-11,3.7
+kenneth.fowler@datavista.com,datavista.com,EXT-14336,74,2687,2,2026-04-09,31.2
+chelsea.hernandez@quantumedgelabs.com,quantumedgelabs.com,EXT-94752,79,2491,2,2026-04-11,22.4
+kathryn.ryan@quantumedgelabs.com,quantumedgelabs.com,EXT-94752,93,638,2,2026-04-10,4.3
+aaron.nguyen@synthetica.ai,synthetica.ai,EXT-56387,67,645,2,2026-04-10,25.0
+andrew.hickman@synthetica.ai,synthetica.ai,EXT-56387,87,3128,2,2026-04-11,30.4
