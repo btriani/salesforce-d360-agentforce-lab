@@ -82,6 +82,114 @@ def ssot_url(instance, path):
     return connect_api_url(instance, path)
 
 
+def response_payload(response: requests.Response) -> Any | None:
+    """Return parsed JSON when available, otherwise None."""
+    try:
+        return response.json()
+    except ValueError:
+        return None
+
+
+def response_summary(response: requests.Response, *, body_limit: int = 500) -> dict[str, Any]:
+    """Normalize a requests response into a compact evidence-friendly shape."""
+    body_text = response.text or ""
+    summary = {
+        "status_code": response.status_code,
+        "ok": response.ok,
+        "reason": response.reason,
+        "url": response.url,
+        "body_preview": body_text[:body_limit],
+    }
+    payload = response_payload(response)
+    if payload is not None:
+        summary["body_json"] = payload
+    return summary
+
+
+def request_exception_summary(exc: requests.RequestException) -> dict[str, Any]:
+    """Normalize a requests exception for probe evidence."""
+    summary = {"error": f"{type(exc).__name__}: {exc}"}
+    response = getattr(exc, "response", None)
+    if response is not None:
+        summary["response"] = response_summary(response)
+    return summary
+
+
+def custom_dmo_api_name(spec_or_name: dict[str, Any] | str) -> str:
+    """Return the custom DMO API name with the __dlm suffix applied once."""
+    name = spec_or_name if isinstance(spec_or_name, str) else spec_or_name["name"]
+    return name if name.endswith("__dlm") else f"{name}__dlm"
+
+
+def custom_dmo_detail_url(instance: str, spec_or_name: dict[str, Any] | str) -> str:
+    """Build the detail URL for a specific custom DMO."""
+    return ssot_url(instance, f"data-model-objects/{custom_dmo_api_name(spec_or_name)}")
+
+
+def create_custom_dmo(
+    instance: str,
+    headers: dict[str, str],
+    spec: dict[str, Any],
+    *,
+    check_existing: bool = True,
+    timeout: int = 60,
+) -> dict[str, Any]:
+    """Create a custom DMO and return a structured result for workflows and probes."""
+    result: dict[str, Any] = {
+        "payload": spec,
+        "dmo_api_name": custom_dmo_api_name(spec),
+        "create_url": ssot_url(instance, "data-model-objects"),
+    }
+
+    if check_existing:
+        preflight_url = custom_dmo_detail_url(instance, spec)
+        result["preflight_url"] = preflight_url
+        try:
+            preflight = requests.get(preflight_url, headers=headers, timeout=30)
+        except requests.RequestException as exc:
+            result["preflight"] = request_exception_summary(exc)
+            result["ok"] = False
+            result["outcome"] = "preflight_error"
+            result["message"] = result["preflight"]["error"]
+            return result
+
+        result["preflight"] = response_summary(preflight, body_limit=300)
+        if preflight.status_code == 200:
+            result["ok"] = True
+            result["outcome"] = "already_exists"
+            result["message"] = "already exists"
+            return result
+
+    try:
+        create_response = requests.post(
+            result["create_url"],
+            headers=headers,
+            json=spec,
+            timeout=timeout,
+        )
+    except requests.RequestException as exc:
+        result["create_response"] = request_exception_summary(exc)
+        result["ok"] = False
+        result["outcome"] = "request_error"
+        result["message"] = result["create_response"]["error"]
+        return result
+
+    result["create_response"] = response_summary(create_response)
+    if create_response.status_code in (200, 201):
+        result["ok"] = True
+        result["outcome"] = "created"
+        result["message"] = f"HTTP {create_response.status_code}"
+        return result
+
+    result["ok"] = False
+    result["outcome"] = "failed"
+    result["message"] = (
+        f"HTTP {create_response.status_code}: "
+        f"{result['create_response'].get('body_preview', '')}"
+    )[:500]
+    return result
+
+
 def query(instance, headers, sql):
     """Run a Data Cloud SQL query and return the parsed response."""
     r = requests.post(

@@ -1,18 +1,21 @@
 """
-Deploy custom DMOs for external data (Web Analytics, Product Usage, Firmographic).
+Attempt custom DMO creation for external data (Web Analytics, Product Usage, Firmographic).
 
 These DMOs mirror the external DLO schemas and are needed because Calculated
 Insights can only JOIN DMOs (not DLOs). After creating the DMOs, the DLO data
-needs to be mapped to them (see deploy_dlo_dmo_mappings.py).
+still needs to be mapped to them (see deploy_dlo_dmo_mappings.py).
 
-The 3 custom DMOs created:
+This script uses the best-known API surface only. It does not prove that the
+endpoint is healthy in the current org, so probe it first before relying on
+these requests as a deployment workflow.
+
+The 3 custom DMO specs preserved here:
   - Web_Engagement__dlm       — individual-level web activity
   - Product_Usage__dlm         — individual-level product telemetry
   - Firmographic_Data__dlm     — account-level enrichment
 """
 import sys
-import requests
-from _common import connect, ssot_url
+from _common import SF_ORG_ALIAS, connect, create_custom_dmo, write_evidence
 
 # DMO definitions — mirror the external DLO schemas
 DMOS = [
@@ -61,42 +64,78 @@ DMOS = [
 ]
 
 
-def deploy_dmo(instance, headers, spec):
-    """Create one custom DMO. Returns (success, message)."""
-    dmo_api_name = f"{spec['name']}__dlm"
+def status_line(result):
+    """Format the most relevant status details from a DMO request result."""
+    if result.get("outcome") == "already_exists":
+        status = result.get("preflight", {}).get("status_code", "n/a")
+        return f"HTTP {status}: already exists"
 
-    # Check if already exists
-    r = requests.get(ssot_url(instance, f"data-model-objects/{dmo_api_name}"),
-                     headers=headers, timeout=30)
-    if r.status_code == 200:
-        return True, f"already exists (skipping)"
+    create_response = result.get("create_response", {})
+    if isinstance(create_response, dict) and create_response.get("status_code") is not None:
+        return f"HTTP {create_response['status_code']}: {result.get('outcome')}"
 
-    # Create
-    r = requests.post(ssot_url(instance, "data-model-objects"),
-                      headers=headers, json=spec, timeout=60)
-    if r.status_code == 201:
-        return True, "created"
-    return False, f"HTTP {r.status_code}: {r.text[:300]}"
+    return str(result.get("message", "request outcome unavailable"))
 
 
 def main():
     instance, headers = connect()
-    print("Deploying custom DMOs for external data...\n")
+    print("This script now uses the best-known workflow surface for custom DMO creation.")
+    print("Run probe_dmo_field_types.py first if the endpoint behavior is unknown in this org.")
+    print()
 
     any_failed = False
+    attempt_summaries = []
     for spec in DMOS:
-        ok, msg = deploy_dmo(instance, headers, spec)
-        status = "✅" if ok else "❌"
-        print(f"  {status} {spec['name']}__dlm — {msg}")
+        result = create_custom_dmo(instance, headers, spec, check_existing=True)
+        ok = bool(result.get("ok"))
+        marker = "✅" if ok else "❌"
+        evidence_payload = {
+            "workflow": "deploy_custom_dmos",
+            "org_alias": SF_ORG_ALIAS,
+            "instance_url": instance,
+            "dmo_name": spec["name"],
+            "dmo_api_name": result["dmo_api_name"],
+            "api_outcome": "success" if ok else "failure",
+            "result": result,
+        }
+        evidence_file = write_evidence(f"deploy_custom_dmo_{spec['name']}", evidence_payload)
+        attempt_summaries.append(
+            {
+                "dmo_name": spec["name"],
+                "dmo_api_name": result["dmo_api_name"],
+                "api_outcome": "success" if ok else "failure",
+                "status_line": status_line(result),
+                "evidence_file": evidence_file,
+            }
+        )
+        print(f"  {marker} {result['dmo_api_name']} — {status_line(result)} evidence={evidence_file}")
         if not ok:
             any_failed = True
 
+    summary_file = write_evidence(
+        "deploy_custom_dmos_summary",
+        {
+            "workflow": "deploy_custom_dmos",
+            "org_alias": SF_ORG_ALIAS,
+            "instance_url": instance,
+            "api_surface": "mixed" if any_failed and any(
+                item["api_outcome"] == "success" for item in attempt_summaries
+            ) else ("failed" if any_failed else "success_or_exists"),
+            "results": attempt_summaries,
+        },
+    )
+
     print()
     if any_failed:
-        print("⚠️  Some DMOs failed to deploy. Review errors above.")
+        print("Some custom DMO requests failed on the current API surface.")
+        print("Review the raw probe evidence before treating this workflow as validated.")
+        print(f"Deployment summary evidence: {summary_file}")
         sys.exit(1)
-    print("✅ All custom DMOs deployed.")
-    print("   Next: run deploy_dlo_dmo_mappings.py to wire DLO fields to these DMOs")
+
+    print("All custom DMO requests returned success or already-exists responses.")
+    print("This is not proof of downstream mapping, ingestion, or queryability.")
+    print(f"Deployment summary evidence: {summary_file}")
+    print("Next: confirm probe evidence, then run deploy_dlo_dmo_mappings.py if appropriate.")
 
 
 if __name__ == "__main__":
