@@ -21,3 +21,16 @@ Concrete findings from the current `my-dev-org` investigation on 2026-04-14. The
 - The public custom DMO create surface becomes unstable immediately after the minimal one-field case in this org; the failures are server-side `UNKNOWN_EXCEPTION` responses, not client-side validation errors.
 - DLO to DMO mapping remains unresolved on public surfaces. The Task 4 inventory narrowed the search: collection surfaces for DMOs, DLOs, and data streams are visible, while the two most obvious mapping-named paths return `404`.
 - Metadata remains a plausible fallback for mapping work because the repo and design docs already note `ObjectSourceTargetMap` / DevOps Data Kits as a possible production-grade path, but that route has not been validated here yet.
+
+## Status of the Multi-Field DMO 500: Undocumented Bug
+
+Cross-checked against the [Developer Edition Limits and Guidelines for Data 360](https://help.salesforce.com/s/articleView?id=data.c360_a_limits_and_guidelines_dev_ed.htm&language=en_US&type=5), the [Data 360 Limits and Guidelines](https://help.salesforce.com/s/articleView?id=sf.c360_a_limits_and_guidelines.htm&language=en_US), the [Customer Data Platform Limits and Guidelines](https://help.salesforce.com/s/articleView?id=sf.c360_a_limits_and_guidelines_cdp.htm&language=en_US&type=5), and the [Connect API spec](https://developer.salesforce.com/docs/data/connectapi/references/spec).
+
+Findings:
+
+- Documented Developer Edition restrictions are all count-based: 300 DMOs, 100 DLOs, 100 data streams, 25 active segments, 2 IR rulesets, 10 GB data, 1 data space. No field-count or creation-method restriction.
+- The documented per-DMO field limit is 800 per type / 1,050 total, applied org-wide, not Developer-Edition-specific.
+- The Connect API spec documents the `fields` parameter as a multi-element array (Available Version: 61.0) and publishes a multi-field sample payload. The only documented failure modes are HTTP 400 validation errors.
+- Nothing on the Salesforce Known Issues portal, Trailblazer community, Stack Overflow, GitHub, or Salesforce Idea Exchange matches this specific symptom.
+
+Therefore, the HTTP 500 on multi-field custom DMO creation in Developer Edition is an **undocumented bug**, not a documented limitation. A ready-to-file bug report with reproduction steps, Salesforce support ErrorIds, and source citations is preserved at [bug-report-dmo-api-500.md](bug-report-dmo-api-500.md).

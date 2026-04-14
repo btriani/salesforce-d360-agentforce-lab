@@ -1,3 +1,26 @@
 # Decision Log
 
-Placeholder for Phase 3 decisions, follow-up findings, and implementation notes.
+Concrete Phase 3 evidence gathered in `my-dev-org`. Every entry below is tied to the artifacts and live verification already present in this repo.
+
+| Date | Surface Tried | Outcome | Repo Recommendation |
+|------|---------------|---------|---------------------|
+| 2026-04-14 | `POST /services/data/v64.0/ssot/queryv2` via `scripts/verify/verify_readiness.py` | Readiness verification passed. Fresh evidence shows `accounts=26`, `cases=18`, `contact_point_email=64`, `individuals=64`, `sales_orders=39`, and `health_score_queryability_rows=26`. | Keep this as the first gate in the practitioner flow. Treat it as proof of queryability only, not as proof that Calculated Insight deployment is ready. |
+| 2026-04-14 | `POST /services/data/v64.0/ssot/data-model-objects` with the smallest custom DMO payload | The minimal custom DMO probe returned `201 Created` in `artifacts/probe_create_custom_dmo-20260414T170126_843286Z.json`. | Preserve this as a smoke probe only. Do not use it as evidence that realistic external DMOs can be created programmatically. |
+| 2026-04-14 | `POST /services/data/v64.0/ssot/data-model-objects` with realistic multi-field custom DMO payloads | The `text_only`, `with_number`, and `with_date` payloads all failed with `500 UNKNOWN_EXCEPTION` in `artifacts/probe_dmo_field_types_summary-20260414T170132_814601Z.json`. The preserved external DMO specs also failed in `artifacts/deploy_custom_dmos_summary-20260414T170144_344573Z.json`. | Treat external custom DMO creation as the current public-surface boundary in this org. The repo should stop here honestly and point readers to this log. |
+| 2026-04-14 | Platform documentation review against the HTTP 500 symptom | Cross-checked the [Developer Edition Limits and Guidelines for Data 360](https://help.salesforce.com/s/articleView?id=data.c360_a_limits_and_guidelines_dev_ed.htm&language=en_US&type=5), the [Data 360 Limits and Guidelines](https://help.salesforce.com/s/articleView?id=sf.c360_a_limits_and_guidelines.htm&language=en_US), the [Customer Data Platform Limits and Guidelines](https://help.salesforce.com/s/articleView?id=sf.c360_a_limits_and_guidelines_cdp.htm&language=en_US&type=5), and the [Connect API spec](https://developer.salesforce.com/docs/data/connectapi/references/spec). Documented Developer Edition limits are all count-based (300 DMOs, 100 DLOs, 100 data streams, 25 active segments, 2 IR rulesets, 10 GB, 1 data space). Documented per-DMO field limits are 800 per type / 1,050 total, with no Dev-Ed-specific reduction. The Connect API spec documents `fields` as a multi-element array and lists only HTTP 400 failure modes. No Known Issue, Trailblazer post, Stack Overflow thread, or GitHub issue reports this symptom. | Treat the HTTP 500 on multi-field custom DMO creation as an **undocumented Developer Edition bug** rather than a documented restriction. File it with Salesforce using the draft at [docs/bug-report-dmo-api-500.md](bug-report-dmo-api-500.md). |
+| 2026-04-14 | `GET /services/data/v64.0/ssot/data-model-objects`, `GET /data-lake-objects`, `GET /data-streams`, `GET /data-mappings`, `GET /mappings` | Collection discovery works for DMOs, DLOs, and data streams. The obvious mapping-named paths return `404`, as recorded in `artifacts/probe_mapping_surfaces_summary-20260414T171448_436518Z.json` and `artifacts/probe_ui_replay-20260414T171435_691093Z.json`. | Use the visible collection surfaces for discovery only. If you finish DLO to DMO mapping through a UI action or unsupported/internal endpoint, capture it and add it to `docs/internal-endpoints.md` immediately. |
+| 2026-04-14 | `GET /services/data/v64.0/ssot/data-model-objects/{api_name}` for `Web_Engagement__dlm`, `Product_Telemetry__dlm`, and `Firmographic_Data__dlm` | Fresh live verification shows all three required external custom DMO detail paths are queryable and currently return `404`, so they are absent in the current org state. | Make custom DMO presence the first check in the final verifier and the first remaining boundary when they are absent. |
+| 2026-04-14 | `GET /services/data/v64.0/ssot/calculated-insights` | Fresh live verification shows the collection is fetchable and currently contains one item, `Test CI with DMOs` (`Test_CI_With_DMOs__cio`), not a Health Score CI. | Record calculated insight existence only when the collection is fetchable. Do not claim Health Score deployment unless the live collection contains the expected object. |
+| 2026-04-14 | `GET /services/data/v64.0/ssot/segments` | Fresh live verification shows the collection is fetchable and currently returns `totalSize=0`, so `At Risk`, `Healthy`, and `Upsell Ready` are absent. | Keep segment verification behind the fetchability check. If segment creation is finished through a UI or unsupported/internal path, record the exact fallback before treating Phase 3 as complete. |
+
+## Current Recommendation
+
+Run the Phase 3 scripts in this order:
+
+1. `scripts/verify/verify_readiness.py`
+2. DMO probes
+3. mapping probes
+4. best-known workflows
+5. `scripts/verify/verify_phase3_outputs.py`
+
+If the final verifier prints a `BOUNDARY` line, treat that as the honest repo state. The next person should consult this log before trying any unsupported/internal fallback.
